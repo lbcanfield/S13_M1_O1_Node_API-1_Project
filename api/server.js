@@ -1,7 +1,7 @@
 // BUILD YOUR SERVER HERE
 const express = require('express');
-
-// HTTP Status Codes
+// Server Model
+const Users = require('./users/model');
 
 
 const server = express();     //Instance of 'express' application
@@ -15,8 +15,16 @@ server.get('/sanity-check', (request, response) => {
 
 /////////////////////SETTING UP ENDPOINTS FOR MVP
 //Endpoint: get (Returns an array of users)
-server.get('/api/users', (request, response) => {
+server.get('/api/users', async (request, response) => {
      //finish
+     try {
+          const users = await Users.find();
+          // console.log(users) //users successfully logged to the console
+          response.status(200).json(users); //success in Postman
+     }
+     catch (error) {
+          response.status(500).json({ message: `ERROR: Could not find users: ${error.message}` })
+     }
 })
 
 //Endpoint: post (Creates a user using the information sent inside the 'request body')
