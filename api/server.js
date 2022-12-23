@@ -22,7 +22,9 @@ server.get('/api/users', async (request, response) => {
           response.status(200).json(users); //success in Postman
      }
      catch (error) {
-          response.status(500).json({ message: `ERROR: Could not find users: ${error.message}` })
+          response.status(500).json({
+               message: "The users information could not be retrieved"
+          })
      }
 })
 
@@ -31,21 +33,21 @@ server.post('/api/users', async (request, response) => {
      try {
           const { name, bio } = request.body;
           if (!name || !bio) {     //for new users, both fields are required
-               response.status(422).json({   //422 - Unprocessable Entry
-                    message: 'Users need a name and a biography'
+               response.status(400).json({
+                    message: "Please provide name and bio for the user"
                })
           }
           else {
                const newUser = await Users.insert({ name, bio });
                response.status(201).json({ //201 - Created //Success in postman
-                    message: `User: ${name} successfully created!`,
+                    message: newUser,
                     data: newUser
                })
           }
      }
      catch (error) {
           response.status(500).json({
-               message: `Error creating user: ${error.message}`,
+               message: "There was an error while saving the user to the database",
           })
      }
 })
@@ -58,7 +60,7 @@ server.get('/api/users/:id', async (request, response) => {
           const user = await Users.findById(id);
           if (!user) {
                response.status(404).json({ //404 - Not Found
-                    message: `User with id: ${id} not found`
+                    message: "The user with the specified ID does not exist"
                })
           }
           else {
@@ -66,7 +68,9 @@ server.get('/api/users/:id', async (request, response) => {
           }
      }
      catch (error) {
-
+          response.status(500).json({
+               message: "The user information could not be retrieved"
+          })
      }
 })
 
@@ -78,26 +82,54 @@ server.delete('/api/users/:id', async (request, response) => {
           const removeUser = await Users.remove(id);
           if (!removeUser) {
                response.status(404).json({
-                    message: `User with id: ${id} not found`
+                    message: "The user with the specified ID does not exist"
                })
           }
           else {
                response.status(202).json({ //202 - Accepted
                     message: "User removed from database",
-                    data: removeUser,
+                    data: removeUser
                })
           }
      }
      catch (error) {
           response.status(500).json({
-               message: `Error deleting user: ${error.message}`,
+               message: "The user could not be removed",
           })
      }
 })
 
 //Endpoint: put (updates a specific user based on the id value)
-server.put('/api/users/:id', (request, response) => {
+server.put('/api/users/:id', async (request, response) => {
      //finish
+     try {
+          const { id } = request.params;
+          const { name, bio } = request.body;
+          if (!name || !bio) {
+               response.status(400).json({
+                    message: "Please provide name and bio for the user"
+               })
+          }
+          else {
+               const updateUser = await Users.update(id, { name, bio })
+               if (!updateUser) {
+                    response.status(404).json({
+                         message: "The user with the specified ID does not exist"
+                    })
+               }
+               else {
+                    response.status(200).json({
+                         message: "User updated successfully",
+                         data: updateUser
+                    })
+               }
+          }
+     }
+     catch (error) {
+          response.status(500).json({
+               message: "The user information could not be modified",
+          })
+     }
 })
 
 
