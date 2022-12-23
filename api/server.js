@@ -28,7 +28,6 @@ server.get('/api/users', async (request, response) => {
 
 //Endpoint: post (Creates a user using the information sent inside the 'request body')
 server.post('/api/users', async (request, response) => {
-     //finish
      try {
           const { name, bio } = request.body;
           if (!name || !bio) {     //for new users, both fields are required
@@ -52,13 +51,48 @@ server.post('/api/users', async (request, response) => {
 })
 
 //Endpoint: get (Returns a specific user based on the id value)
-server.get('/api/users/:id', (request, response) => {
+server.get('/api/users/:id', async (request, response) => {
      //finish
+     try {
+          const { id } = request.params;
+          const user = await Users.findById(id);
+          if (!user) {
+               response.status(404).json({ //404 - Not Found
+                    message: `User with id: ${id} not found`
+               })
+          }
+          else {
+               response.status(200).json(user);
+          }
+     }
+     catch (error) {
+
+     }
 })
 
 //Endpoint: delete (Removes a specific user based on the id value)
-server.delete('/api/users/:id', (request, response) => {
+server.delete('/api/users/:id', async (request, response) => {
      //finish
+     try {
+          const { id } = request.params;
+          const removeUser = await Users.remove(id);
+          if (!removeUser) {
+               response.status(404).json({
+                    message: `User with id: ${id} not found`
+               })
+          }
+          else {
+               response.status(202).json({ //202 - Accepted
+                    message: "User removed from database",
+                    data: removeUser,
+               })
+          }
+     }
+     catch (error) {
+          response.status(500).json({
+               message: `Error deleting user: ${error.message}`,
+          })
+     }
 })
 
 //Endpoint: put (updates a specific user based on the id value)
